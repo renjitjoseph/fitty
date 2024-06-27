@@ -1,6 +1,6 @@
 import React from "react";
 import { Link } from "react-router-dom";
-import "./LandingPage.css"; // We'll create this CSS file next
+import "./LandingPage.css";
 
 function LandingPage() {
   return (
