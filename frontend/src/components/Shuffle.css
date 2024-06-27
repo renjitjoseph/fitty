@@ -1,49 +1,56 @@
-.shuffle-page {
-  text-align: center;
-  background: rgba(255, 255, 255, 0.8);
+/* Shuffle.css */
+.shuffle-container {
   padding: 20px;
-  border-radius: 10px;
-  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
-  position: relative;
-}
-
-.shuffle-title {
-  margin-bottom: 20px;
-}
-
-.shuffle-gallery {
-  display: flex;
-  flex-wrap: wrap;
-  justify-content: center;
-  gap: 20px;
-  margin-top: 20px;
+  max-width: 600px;
+  margin: auto;
+  background-color: #f0f0f0;
+  border-radius: 8px;
+  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+  text-align: center;
 }
 
 .shuffle-item {
-  width: 150px;
-  text-align: center;
+  margin: 15px 0;
 }
 
-.shuffle-item img {
-  width: 100%;
-  height: auto;
-  border-radius: 10px;
-  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
+.shuffle-item h3 {
+  color: #333;
+  margin-bottom: 5px;
 }
 
-.back-button {
-  position: absolute;
-  top: 20px;
-  left: 20px;
+.shuffle-item p {
+  font-size: 16px;
+  color: #666;
+}
+
+button {
+  padding: 10px 20px;
+  margin-top: 10px;
+  border: none;
+  border-radius: 5px;
   background-color: #007bff;
   color: white;
-  border: none;
-  padding: 10px 20px;
-  border-radius: 5px;
   cursor: pointer;
-  transition: background-color 0.3s;
+  font-size: 16px;
+  transition: background-color 0.3s ease;
 }
 
-.back-button:hover {
+button:hover {
   background-color: #0056b3;
+}
+
+button.locked {
+  background-color: #28a745;
+}
+
+button.locked:hover {
+  background-color: #1e7a34;
+}
+
+.favorites-button {
+  background-color: #ff4081;
+}
+
+.favorites-button:hover {
+  background-color: #e03568;
 }

@@ -1,49 +1,25 @@
-.favorites-page {
-  text-align: center;
-  background: rgba(255, 255, 255, 0.8);
+/* Favorites.css */
+.favorites-container {
   padding: 20px;
-  border-radius: 10px;
-  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
-  position: relative;
-}
-
-.favorites-title {
-  margin-bottom: 20px;
-}
-
-.favorites-gallery {
-  display: flex;
-  flex-wrap: wrap;
-  justify-content: center;
-  gap: 20px;
-  margin-top: 20px;
-}
-
-.favorites-item {
-  width: 150px;
+  max-width: 600px;
+  margin: auto;
+  background-color: #ffffff;
+  border-radius: 8px;
+  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
   text-align: center;
 }
 
-.favorites-item img {
-  width: 100%;
-  height: auto;
-  border-radius: 10px;
-  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
+.favorite-item {
+  border-bottom: 1px solid #eee;
+  padding: 10px 0;
+  margin: 10px 0;
 }
 
-.back-button {
-  position: absolute;
-  top: 20px;
-  left: 20px;
-  background-color: #007bff;
-  color: white;
-  border: none;
-  padding: 10px 20px;
-  border-radius: 5px;
-  cursor: pointer;
-  transition: background-color 0.3s;
+.favorite-item:last-child {
+  border-bottom: none;
 }
 
-.back-button:hover {
-  background-color: #0056b3;
+.favorite-item p {
+  font-size: 16px;
+  color: #666;
 }
