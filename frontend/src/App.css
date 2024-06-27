@@ -1,122 +1,31 @@
-/* General body styles */
+/* General styles */
 body {
   margin: 0;
-  padding: 0;
-  font-family: "Arial", sans-serif;
-  background-color: #f4f4f4;
-  color: #333;
+  font-family: Arial, Helvetica, sans-serif;
+  background: linear-gradient(90deg, #ffeb3b, #ff5722);
+  min-height: 100vh;
+  display: flex;
+  align-items: center;
+  justify-content: center;
 }
 
-/* Container for each page */
-.container {
-  width: 80%;
-  max-width: 1200px;
-  margin: 0 auto;
-  padding: 20px;
-  background-color: #fff;
-  box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1);
-  border-radius: 8px;
-  margin-top: 20px;
-}
-
-/* Headings */
 h1,
 h2,
-h3 {
-  color: #333;
+h3,
+h4,
+h5,
+h6 {
+  margin: 0;
+  padding: 0;
 }
 
-/* Navigation styling */
-.navbar {
-  background-color: #007bff;
-  padding: 10px 20px;
-  color: #ffffff;
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-}
-
-.navbar a {
-  color: white;
-  text-decoration: none;
-  padding: 8px 15px;
-  border-radius: 4px;
-  transition: background-color 0.3s;
-}
-
-.navbar a:hover {
-  background-color: #0056b3;
-}
-
-/* Button styling */
-.button {
-  background-color: #007bff;
-  color: white;
-  border: none;
-  padding: 10px 20px;
-  border-radius: 5px;
-  text-align: center;
-  display: inline-block;
-  font-size: 16px;
-  margin: 10px;
-  cursor: pointer;
-  transition: background-color 0.3s;
-}
-
-.button:hover {
-  background-color: #0056b3;
-}
-
-/* Link styling within buttons for full coverage */
-.button a {
-  color: white;
-  text-decoration: none;
-  display: block;
-}
-
-.button a:hover {
-  color: white;
-}
-
-/* Form input styling */
-input[type="text"],
-input[type="email"],
-input[type="password"] {
+/* Loading bar */
+#top-loading-bar {
+  position: fixed;
+  top: 0;
+  left: 0;
   width: 100%;
-  padding: 10px;
-  margin: 8px 0;
-  display: inline-block;
-  border: 1px solid #ccc;
-  border-radius: 4px;
-  box-sizing: border-box;
-}
-
-/* Form submit button styling */
-input[type="submit"] {
-  width: 100%;
-  background-color: #4caf50;
-  color: white;
-  padding: 14px 20px;
-  margin: 8px 0;
-  border: none;
-  border-radius: 4px;
-  cursor: pointer;
-}
-
-input[type="submit"]:hover {
-  background-color: #45a049;
-}
-
-/* Utility classes for margins and padding */
-.mt-20 {
-  margin-top: 20px;
-}
-.mb-20 {
-  margin-bottom: 20px;
-}
-.pt-20 {
-  padding-top: 20px;
-}
-.pb-20 {
-  padding-bottom: 20px;
+  height: 4px;
+  background-color: #f11946;
+  z-index: 9999;
 }

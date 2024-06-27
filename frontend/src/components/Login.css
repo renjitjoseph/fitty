@@ -1,25 +1,10 @@
-/* General Styles */
-body,
-html {
-  margin: 0;
-  padding: 0;
-  height: 100%;
-  width: 100%;
-  font-family: "Arial", sans-serif;
-  background: linear-gradient(135deg, #f6d365 0%, #fda085 100%);
-}
-
-.login-container {
-  position: absolute;
-  top: 50%;
-  left: 50%;
-  transform: translate(-50%, -50%);
+.login-page {
   text-align: center;
-  background: rgba(255, 255, 255, 0.85);
-  padding: 60px 40px;
-  border-radius: 12px;
-  box-shadow: 0 4px 15px rgba(0, 0, 0, 0.1);
-  width: 400px; /* Increase width */
+  background: rgba(255, 255, 255, 0.8);
+  padding: 20px;
+  border-radius: 10px;
+  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
+  position: relative;
 }
 
 .login-form {
@@ -28,29 +13,42 @@ html {
   align-items: center;
 }
 
-.input-field {
-  width: 100%;
-  padding: 12px; /* Increase padding */
-  margin-top: 15px; /* Increase margin */
-  margin-bottom: 25px; /* Increase margin */
+.login-form input {
+  margin: 10px 0;
+  padding: 10px;
+  border-radius: 5px;
   border: 1px solid #ccc;
-  border-radius: 4px;
+  width: 80%;
 }
 
-.login-button,
+.login-form button {
+  margin-top: 10px;
+  padding: 10px 20px;
+  border-radius: 5px;
+  border: none;
+  background-color: #007bff;
+  color: white;
+  cursor: pointer;
+  transition: background-color 0.3s;
+}
+
+.login-form button:hover {
+  background-color: #0056b3;
+}
+
 .back-button {
-  width: 100%;
+  position: absolute;
+  top: 20px;
+  left: 20px;
   background-color: #007bff;
   color: white;
   border: none;
-  padding: 12px; /* Increase padding */
-  border-radius: 4px;
+  padding: 10px 20px;
+  border-radius: 5px;
   cursor: pointer;
-  font-size: 18px; /* Increase font size */
-  margin-top: 15px; /* Increase margin */
+  transition: background-color 0.3s;
 }
 
-.login-button:hover,
 .back-button:hover {
   background-color: #0056b3;
 }
