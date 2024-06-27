@@ -26,4 +26,4 @@ yarn-error.log*
 /backend/app/keys/*
 venv/
 *venv*/
-backend/app/keys/fitty-af564-firebase-adminsdk-97z72-440f4e2595.json
+
