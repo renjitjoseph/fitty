@@ -1,24 +1,23 @@
+import os
 from flask import Flask
 from flask_cors import CORS
-from flask_jwt_extended import JWTManager
-from .models import db
+import firebase_admin
+from firebase_admin import credentials, auth
 
 def create_app():
     app = Flask(__name__)
     app.config.from_object('config.Config')
 
-    # Setup CORS specifically for all routes under "/api/*" from "http://localhost:3000"
-    CORS(app, resources={r"/api/*": {"origins": "http://localhost:3000"}})
+    # Initialize Firebase Admin
+    cred_path = os.path.join(os.getcwd(), 'app', 'keys', 'fitty-af564-firebase-adminsdk-97z72-440f4e2595.json')
+    cred = credentials.Certificate(cred_path)
+    firebase_admin.initialize_app(cred)
 
-    jwt = JWTManager(app)
-    db.init_app(app)
+    # Setup CORS for all routes
+    CORS(app)
 
+    # Import and register the authentication blueprint
     from .routes.authentication import auth_blueprint
-    from .routes.wardrobe import wardrobe_blueprint
-    from .routes.outfits import outfits_blueprint
-
     app.register_blueprint(auth_blueprint, url_prefix='/api/auth')
-    app.register_blueprint(wardrobe_blueprint, url_prefix='/api/wardrobe')
-    app.register_blueprint(outfits_blueprint, url_prefix='/api/outfits')
 
     return app

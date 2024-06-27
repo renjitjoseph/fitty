@@ -1,6 +1,7 @@
 import React, { useState } from "react";
-import axios from "axios";
 import { useNavigate } from "react-router-dom";
+import { createUserWithEmailAndPassword } from "firebase/auth";
+import { auth } from "../firebaseConfig";
 
 function Register() {
   const [email, setEmail] = useState("");
@@ -9,17 +10,11 @@ function Register() {
 
   const handleRegister = async () => {
     try {
-      const response = await axios.post(
-        "http://localhost:5000/api/auth/register",
-        { email, password }
-      );
-      console.log("User created:", response.data);
-      navigate("/login"); // Redirect to the Login page on successful registration
+      await createUserWithEmailAndPassword(auth, email, password);
+      console.log("User registered");
+      navigate("/login"); // Redirect to login after registration
     } catch (error) {
-      console.error(
-        "Registration Error:",
-        error.response ? error.response.data : "Registration failed"
-      );
+      console.error("Registration Error:", error.message);
     }
   };
 

@@ -1,25 +1,21 @@
 from flask import Blueprint, request, jsonify
-from werkzeug.security import generate_password_hash, check_password_hash
-from flask_jwt_extended import create_access_token, get_jwt_identity, jwt_required
-from app.models import db
+from firebase_admin import auth
 
 auth_blueprint = Blueprint('auth', __name__)
 
 @auth_blueprint.route('/register', methods=['POST'])
 def register():
-    user_info = request.json
-    user = db.db.users.find_one({'email': user_info['email']})
-    if user:
-        return jsonify({"msg": "Email already in use"}), 409
-    hashed_password = generate_password_hash(user_info['password'])
-    db.db.users.insert_one({'email': user_info['email'], 'password': hashed_password})
-    return jsonify({"msg": "User registered successfully"}), 201
+    data = request.get_json()
+    try:
+        user = auth.create_user(
+            email=data['email'],
+            password=data['password']
+        )
+        return jsonify({'uid': user.uid}), 201
+    except Exception as e:
+        return jsonify({'error': str(e)}), 400
 
 @auth_blueprint.route('/login', methods=['POST'])
 def login():
-    user_info = request.json
-    user = db.db.users.find_one({'email': user_info['email']})
-    if user and check_password_hash(user['password'], user_info['password']):
-        access_token = create_access_token(identity=user_info['email'])
-        return jsonify(access_token=access_token), 200
-    return jsonify({"msg": "Invalid credentials"}), 401
+    # Firebase Authentication is handled client-side
+    return jsonify({'message': 'Login handled by client.'}), 200

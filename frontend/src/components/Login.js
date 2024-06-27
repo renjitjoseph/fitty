@@ -1,6 +1,8 @@
 import React, { useState } from "react";
-import axios from "axios";
 import { useNavigate } from "react-router-dom";
+import { signInWithEmailAndPassword } from "firebase/auth";
+import { auth } from "../firebaseConfig";
+import "./Login.css";
 
 function Login() {
   const [email, setEmail] = useState("");
@@ -9,17 +11,10 @@ function Login() {
 
   const handleLogin = async () => {
     try {
-      const response = await axios.post(
-        "http://localhost:5000/api/auth/login",
-        { email, password }
-      );
-      console.log("Access Token:", response.data.access_token);
+      await signInWithEmailAndPassword(auth, email, password);
       navigate("/home"); // Redirect to the Home page on successful login
     } catch (error) {
-      console.error(
-        "Login Error:",
-        error.response ? error.response.data : "Login failed"
-      );
+      console.error("Login Error:", error.message);
     }
   };
 
