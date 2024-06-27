@@ -26,30 +26,59 @@ function Wardrobe() {
   const [uploadedImages, setUploadedImages] = useState([]);
   const loadingBarRef = useRef(null);
   const navigate = useNavigate();
+  const [refreshKey, setRefreshKey] = useState(0);
 
   const fetchItems = useCallback(async () => {
     const user = auth.currentUser;
     if (user) {
       console.log("Fetching items for user ID:", user.uid);
-      const items = [];
-      for (const cat of categories) {
-        const categoryRef = ref(storage, `wardrobe/${user.uid}/${cat}`);
-        const categoryList = await listAll(categoryRef);
-        for (const itemRef of categoryList.items) {
-          const url = await getDownloadURL(itemRef);
-          items.push({ id: itemRef.name, url, category: cat });
+      try {
+        const items = [];
+        for (const cat of categories) {
+          console.log(`Fetching items for category: ${cat}`);
+          const categoryRef = ref(storage, `wardrobe/${user.uid}/${cat}`);
+          const categoryList = await listAll(categoryRef);
+          console.log(`Found ${categoryList.items.length} items in ${cat}`);
+          for (const itemRef of categoryList.items) {
+            try {
+              const url = await getDownloadURL(itemRef);
+              items.push({ id: itemRef.name, url, category: cat });
+              console.log(`Added item: ${itemRef.name} in ${cat}`);
+            } catch (itemError) {
+              console.error(
+                `Error fetching URL for item ${itemRef.name}:`,
+                itemError
+              );
+            }
+          }
         }
+        console.log("All items fetched. Total count:", items.length);
+        setUploadedImages((prevImages) => {
+          console.log("Previous images:", prevImages);
+          console.log("New images:", items);
+          return items;
+        });
+      } catch (error) {
+        console.error("Error in fetchItems:", error);
       }
-      setUploadedImages(items);
-      console.log("Fetched items:", items);
     } else {
       console.error("No user is signed in.");
     }
   }, []);
 
   useEffect(() => {
+    console.log("Effect triggered with refreshKey:", refreshKey);
     fetchItems();
-  }, [fetchItems]);
+  }, [fetchItems, refreshKey]);
+
+  const handleManualRefresh = useCallback(() => {
+    console.log("Manual refresh triggered");
+    setRefreshKey((prevKey) => {
+      const newKey = prevKey + 1;
+      console.log("Updating refresh key to:", newKey);
+      return newKey;
+    });
+  }, []);
 
   const handleFileChange = (event) => {
     setFile(event.target.files[0]);
@@ -59,14 +88,12 @@ function Wardrobe() {
     setCategory(event.target.value);
   };
 
-  const handleRefresh = () => {
-    console.log("Refreshing items...");
-    fetchItems();
-  };
-
   const handleSubmit = async (event) => {
     event.preventDefault();
+    console.log("handleSubmit triggered");
+
     if (!file || !category) {
+      console.log("File or category missing");
       alert("Please select a file and a category.");
       return;
     }
@@ -78,10 +105,14 @@ function Wardrobe() {
     };
 
     try {
+      console.log("Compressing file");
       const compressedFile = await imageCompression(file, options);
       const uniqueFileName = `${uuidv4()}-${compressedFile.name}`;
+      console.log("Compressed file name:", uniqueFileName);
+
       const user = auth.currentUser;
       if (user) {
+        console.log("User authenticated, starting upload");
         const storageRef = ref(
           storage,
           `wardrobe/${user.uid}/${category}/${uniqueFileName}`
@@ -93,41 +124,52 @@ function Wardrobe() {
           (snapshot) => {
             const progress =
               (snapshot.bytesTransferred / snapshot.totalBytes) * 100;
+            console.log("Upload progress:", progress);
             loadingBarRef.current.continuousStart(progress);
           },
           (error) => {
-            alert("Error uploading file");
             console.error("Upload error:", error);
+            alert("Error uploading file: " + error.message);
             loadingBarRef.current.complete();
           },
           async () => {
-            const downloadURL = await getDownloadURL(uploadTask.snapshot.ref);
-            const newItem = {
-              id: uniqueFileName, // Using the file name as an ID for uniqueness
-              url: downloadURL,
-              category,
-            };
-            await addDoc(collection(db, "wardrobes", user.uid, "items"), {
-              url: downloadURL,
-              category,
-            });
-            // Update state immediately with the new image
-            setUploadedImages((prevImages) => [...prevImages, newItem]);
-            setConfirmationMessage("File uploaded successfully!");
-            setTimeout(() => setConfirmationMessage(""), 3000);
-            setFile(null);
-            setCategory("");
-            setShowForm(false);
-            loadingBarRef.current.complete();
+            console.log("Upload completed, getting download URL");
+            try {
+              const downloadURL = await getDownloadURL(uploadTask.snapshot.ref);
+              console.log("Download URL obtained:", downloadURL);
 
-            console.log("Upload complete. New item added to the view.");
+              const newItem = {
+                id: uniqueFileName,
+                url: downloadURL,
+                category,
+              };
+              console.log("Adding new item to Firestore:", newItem);
+
+              await addDoc(
+                collection(db, "wardrobes", user.uid, "items"),
+                newItem
+              );
+              console.log("Item added to Firestore");
+              setConfirmationMessage("File uploaded successfully!");
+              setTimeout(() => setConfirmationMessage(""), 3000);
+              setFile(null);
+              setCategory("");
+              setShowForm(false);
+              loadingBarRef.current.complete();
+              console.log("Upload complete. Triggering manual refresh.");
+              handleManualRefresh();
+              console.log("Manual refresh triggered after upload");
+            } catch (error) {
+              console.error("Error in upload completion:", error);
+            }
           }
         );
       } else {
         console.error("No user is signed in.");
       }
     } catch (error) {
-      console.error("Error compressing file:", error);
+      console.error("Error during the upload process:", error);
+      alert("Failed to compress or upload file: " + error.message);
     }
   };
 
@@ -142,14 +184,10 @@ function Wardrobe() {
       try {
         await deleteObject(imageRef);
         await deleteDoc(doc(db, "wardrobes", user.uid, "items", id));
-        setUploadedImages(uploadedImages.filter((image) => image.id !== id));
         setConfirmationMessage("File deleted successfully!");
         setTimeout(() => setConfirmationMessage(""), 3000);
-
-        console.log("Delete complete. Fetching items again.");
-
-        // Re-fetch items
-        await fetchItems();
+        console.log("Delete complete. Triggering manual refresh.");
+        handleManualRefresh();
       } catch (error) {
         console.error("Error deleting file:", error);
       }
@@ -163,12 +201,10 @@ function Wardrobe() {
         Back
       </button>
       <h2 className="wardrobe-title">My Wardrobe</h2>
-      <button className="refresh-button" onClick={handleRefresh}>
-        Refresh
-      </button>
       {confirmationMessage && (
         <div className="confirmation-message">{confirmationMessage}</div>
       )}
+      <button onClick={handleManualRefresh}>Refresh Items</button>
       <div className="wardrobe-gallery">
         {uploadedImages.map((image, index) => (
           <div key={index} className="wardrobe-item">
@@ -196,12 +232,17 @@ function Wardrobe() {
           <input type="file" onChange={handleFileChange} />
           <select value={category} onChange={handleCategoryChange}>
             <option value="">Select Category</option>
-            <option value="top">Top</option>
-            <option value="bottom">Bottom</option>
-            <option value="shoes">Shoes</option>
-            <option value="accessories">Accessories</option>
+            {categories.map((cat) => (
+              <option key={cat} value={cat}>
+                {cat}
+              </option>
+            ))}
           </select>
-          <button type="submit" className="wardrobe-button">
+          <button
+            type="submit"
+            className="wardrobe-button"
+            onClick={() => console.log("Upload button clicked")}
+          >
             Upload
           </button>
         </form>
