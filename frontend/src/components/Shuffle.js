@@ -1,7 +1,6 @@
-import React, { useState } from "react";
-import { ref, listAll, getDownloadURL } from "firebase/storage";
-import { auth, db, storage } from "../firebaseConfig";
-import { collection, addDoc } from "firebase/firestore";
+import React, { useState, useEffect } from "react";
+import { ref, listAll, getDownloadURL, uploadBytes } from "firebase/storage";
+import { auth, storage } from "../firebaseConfig";
 import { useNavigate } from "react-router-dom";
 import "./Shuffle.module.css";
 
@@ -11,6 +10,16 @@ function Shuffle() {
   const [outfitItems, setOutfitItems] = useState({});
   const [locks, setLocks] = useState({});
   const navigate = useNavigate();
+
+  useEffect(() => {
+    const authSubscription = auth.onAuthStateChanged((user) => {
+      if (!user) {
+        navigate("/login"); // Redirect to login if not authenticated
+      }
+    });
+
+    return () => authSubscription(); // Cleanup subscription on unmount
+  }, [navigate]);
 
   const fetchCategoryItems = async (category) => {
     const user = auth.currentUser;
@@ -51,13 +60,27 @@ function Shuffle() {
     }
 
     try {
-      const newItem = {
-        top: outfitItems.top?.url,
-        bottom: outfitItems.bottom?.url,
-        shoes: outfitItems.shoes?.url,
-        accessories: outfitItems.accessories?.url,
-      };
-      await addDoc(collection(db, "wardrobe", user.uid, "favorites"), newItem);
+      const favoritesRef = ref(
+        storage,
+        `wardrobe/${user.uid}/favorites/favorites.json`
+      );
+      const favoritesSnapshot = await getDownloadURL(favoritesRef)
+        .then((url) => fetch(url).then((res) => res.json()))
+        .catch(() => []);
+      const newFavorites = [
+        ...favoritesSnapshot,
+        {
+          top: outfitItems.top?.url,
+          bottom: outfitItems.bottom?.url,
+          shoes: outfitItems.shoes?.url,
+          accessories: outfitItems.accessories?.url,
+          timestamp: new Date(),
+        },
+      ];
+      const blob = new Blob([JSON.stringify(newFavorites)], {
+        type: "application/json",
+      });
+      await uploadBytes(favoritesRef, blob);
       alert("Outfit added to favorites!");
     } catch (error) {
       console.error("Error adding to favorites:", error);
