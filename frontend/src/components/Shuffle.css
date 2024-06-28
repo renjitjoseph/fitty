@@ -1,7 +1,7 @@
-.favorites-container {
+.shuffle-container {
   text-align: center;
   padding: 20px;
-  background: linear-gradient(to right, #4facfe, #00f2fe);
+  background: linear-gradient(to right, #00c6ff, #0072ff);
   height: 100vh;
 }
 
@@ -23,22 +23,11 @@ button:hover {
   background-color: #45a049;
 }
 
-.favorites-grid {
-  display: flex;
-  flex-wrap: wrap;
-  justify-content: center;
+.shuffle-item {
+  margin: 20px 0;
 }
 
-.favorite-outfit {
-  margin: 20px;
-  text-align: center;
-  background-color: #fff;
-  border-radius: 10px;
-  padding: 20px;
-  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
-}
-
-.favorite-outfit img {
+.shuffle-item img {
   max-width: 100px;
   margin-bottom: 10px;
   border-radius: 10px;
