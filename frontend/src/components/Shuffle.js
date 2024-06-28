@@ -2,7 +2,7 @@ import React, { useState, useEffect } from "react";
 import { ref, listAll, getDownloadURL, uploadBytes } from "firebase/storage";
 import { auth, storage } from "../firebaseConfig";
 import { useNavigate } from "react-router-dom";
-import "./Shuffle.module.css";
+import "./Shuffle.css";
 
 const categories = ["top", "bottom", "shoes", "accessories"];
 
