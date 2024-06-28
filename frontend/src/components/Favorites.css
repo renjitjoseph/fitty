@@ -1,25 +1,55 @@
 /* Favorites.css */
 .favorites-container {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
   padding: 20px;
-  max-width: 600px;
-  margin: auto;
-  background-color: #ffffff;
-  border-radius: 8px;
-  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
-  text-align: center;
+  background-color: #f0f0f3;
+}
+
+.favorites-header {
+  color: #333;
+  font-size: 24px;
+  margin-bottom: 20px;
+}
+
+.favorites-gallery {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 20px;
+  width: 100%;
 }
 
 .favorite-item {
-  border-bottom: 1px solid #eee;
-  padding: 10px 0;
-  margin: 10px 0;
+  background: white;
+  padding: 10px;
+  border-radius: 10px;
+  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+  transition: transform 0.3s ease;
+  overflow: hidden;
 }
 
-.favorite-item:last-child {
-  border-bottom: none;
+.favorite-item:hover {
+  transform: translateY(-5px);
 }
 
-.favorite-item p {
-  font-size: 16px;
-  color: #666;
+.favorite-item img {
+  width: 100%; /* Adjust based on preference */
+  height: auto;
+  border-radius: 5px;
+}
+
+.delete-button {
+  padding: 8px 16px;
+  background-color: #ff6347;
+  color: white;
+  border: none;
+  border-radius: 5px;
+  cursor: pointer;
+  margin-top: 10px;
+  transition: background-color 0.3s;
+}
+
+.delete-button:hover {
+  background-color: #e5533d;
 }

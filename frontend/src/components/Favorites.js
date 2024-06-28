@@ -1,43 +1,49 @@
-import React, { useState, useEffect } from "react";
-import { db } from "../firebaseConfig";
-import { collection, getDocs } from "firebase/firestore";
+import React, { useEffect, useState } from "react";
+import { auth, db } from "../firebaseConfig";
+import { collection, getDocs, deleteDoc, doc } from "firebase/firestore";
+import { useNavigate } from "react-router-dom";
 
 function Favorites() {
-  const categories = ["top", "bottom", "shoes", "accessories"]; // Define categories here
   const [favorites, setFavorites] = useState([]);
+  const navigate = useNavigate();
 
   useEffect(() => {
     const fetchFavorites = async () => {
-      const querySnapshot = await getDocs(collection(db, "favorites"));
-      setFavorites(
-        querySnapshot.docs.map((doc) => ({ id: doc.id, ...doc.data() }))
-      );
+      const user = auth.currentUser;
+      if (!user) return;
+
+      const favsRef = collection(db, "wardrobe", user.uid, "favorites");
+      const snapshot = await getDocs(favsRef);
+      const allFavs = snapshot.docs.map((doc) => ({
+        id: doc.id,
+        ...doc.data(),
+      }));
+      setFavorites(allFavs);
     };
 
     fetchFavorites();
   }, []);
 
+  const deleteFavorite = async (id) => {
+    const user = auth.currentUser;
+    if (user) {
+      await deleteDoc(doc(db, "wardrobe", user.uid, "favorites", id));
+      setFavorites((prev) => prev.filter((fav) => fav.id !== id));
+    }
+  };
+
   return (
     <div>
-      <h2>Favorites</h2>
-      {favorites.length > 0 ? (
-        favorites.map((fav) => (
-          <div
-            key={fav.id}
-            style={{
-              margin: "10px",
-              padding: "10px",
-              border: "1px solid #ccc",
-            }}
-          >
-            {categories.map((category) => (
-              <p key={category}>{fav[category]?.name}</p>
-            ))}
-          </div>
-        ))
-      ) : (
-        <p>No favorites yet.</p>
-      )}
+      <button onClick={() => navigate("/home")}>Back to Home</button>
+      {favorites.map((fav, index) => (
+        <div key={index}>
+          <img src={fav.top} alt="top" />
+          <img src={fav.bottom} alt="bottom" />
+          <img src={fav.shoes} alt="shoes" />
+          <img src={fav.accessories} alt="accessories" />
+          <button onClick={() => deleteFavorite(fav.id)}>Delete</button>
+        </div>
+      ))}
     </div>
   );
 }

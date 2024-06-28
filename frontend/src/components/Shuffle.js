@@ -1,83 +1,102 @@
-import React, { useState, useEffect, useCallback } from "react";
-import { db } from "../firebaseConfig";
-import { collection, query, where, getDocs, addDoc } from "firebase/firestore";
+import React, { useState } from "react";
+import { ref, listAll, getDownloadURL } from "firebase/storage";
+import { auth, db, storage } from "../firebaseConfig";
+import { collection, addDoc } from "firebase/firestore";
+import { useNavigate } from "react-router-dom";
+import "./Shuffle.module.css";
 
-// Define categories outside of the component to ensure they are constant
 const categories = ["top", "bottom", "shoes", "accessories"];
 
 function Shuffle() {
-  const [outfit, setOutfit] = useState({});
-  const [locked, setLocked] = useState({});
-  const [isLoading, setIsLoading] = useState(false);
+  const [outfitItems, setOutfitItems] = useState({});
+  const [locks, setLocks] = useState({});
+  const navigate = useNavigate();
 
-  // Memoizing fetchItems using useCallback with proper dependencies
-  const fetchItems = useCallback(async () => {
-    if (isLoading) return;
-    setIsLoading(true);
-    let newOutfit = { ...outfit };
-    let shouldUpdate = false;
+  const fetchCategoryItems = async (category) => {
+    const user = auth.currentUser;
+    if (!user) return null; // Ensure the user is logged in
 
-    for (const category of categories) {
-      if (!locked[category]) {
-        const q = query(
-          collection(db, "wardrobe"),
-          where("category", "==", category)
-        );
-        const querySnapshot = await getDocs(q);
-        const items = querySnapshot.docs.map((doc) => ({
-          id: doc.id,
-          ...doc.data(),
-        }));
-        const selectedItem = items[Math.floor(Math.random() * items.length)];
-        if (
-          !newOutfit[category] ||
-          newOutfit[category].id !== selectedItem.id
-        ) {
-          newOutfit[category] = selectedItem;
-          shouldUpdate = true;
-        }
-      }
-    }
-
-    if (shouldUpdate) {
-      setOutfit(newOutfit);
-    }
-    setIsLoading(false);
-  }, [outfit, locked, isLoading]);
-
-  // Use effect for initial fetch
-  useEffect(() => {
-    fetchItems();
-  }, [fetchItems]);
-
-  const toggleLock = (category) => {
-    setLocked((prev) => ({ ...prev, [category]: !prev[category] }));
+    const itemsRef = ref(storage, `wardrobe/${user.uid}/${category}`);
+    const snapshot = await listAll(itemsRef);
+    const items = await Promise.all(
+      snapshot.items.map((itemRef) =>
+        getDownloadURL(itemRef).then((url) => ({ url, category }))
+      )
+    );
+    return items.length > 0
+      ? items[Math.floor(Math.random() * items.length)]
+      : null;
   };
 
-  const handleFavorite = async () => {
-    if (!isLoading) {
-      await addDoc(collection(db, "favorites"), outfit);
+  const shuffleOutfits = async () => {
+    const user = auth.currentUser;
+    if (!user) return;
+
+    const newItems = {};
+    for (let category of categories) {
+      if (!locks[category]) {
+        newItems[category] = await fetchCategoryItems(category);
+      } else {
+        newItems[category] = outfitItems[category]; // Keep the locked item
+      }
     }
+    setOutfitItems(newItems);
+  };
+
+  const addToFavorites = async () => {
+    const user = auth.currentUser;
+    if (!user) {
+      alert("You must be logged in to add favorites.");
+      return;
+    }
+
+    try {
+      const newItem = {
+        top: outfitItems.top?.url,
+        bottom: outfitItems.bottom?.url,
+        shoes: outfitItems.shoes?.url,
+        accessories: outfitItems.accessories?.url,
+      };
+      await addDoc(collection(db, "wardrobe", user.uid, "favorites"), newItem);
+      alert("Outfit added to favorites!");
+    } catch (error) {
+      console.error("Error adding to favorites:", error);
+      alert("Failed to add outfit to favorites.");
+    }
+  };
+
+  const toggleLock = (category) => {
+    setLocks((prevLocks) => ({
+      ...prevLocks,
+      [category]: !prevLocks[category],
+    }));
   };
 
   return (
     <div>
-      <h2>Shuffle Outfits</h2>
+      <h1>Shuffle and Lock Items</h1>
+      <button onClick={() => navigate("/home")}>Back to Home</button>
       {categories.map((category) => (
         <div key={category}>
-          <h3>{category}</h3>
-          <p>{outfit[category]?.name || "No item selected"}</p>
+          <p>
+            {category.toUpperCase()}:{" "}
+            {outfitItems[category] ? (
+              <img
+                src={outfitItems[category].url}
+                alt={category}
+                style={{ width: "100px", height: "100px" }}
+              />
+            ) : (
+              "None"
+            )}
+          </p>
           <button onClick={() => toggleLock(category)}>
-            {locked[category] ? "Unlock" : "Lock"}
+            {locks[category] ? "Unlock" : "Lock"}
           </button>
         </div>
       ))}
-      <button onClick={fetchItems} disabled={isLoading}>
-        Shuffle
-      </button>
-      <button onClick={handleFavorite} disabled={isLoading}>
-        ♥ Add to Favorites
-      </button>
+      <button onClick={shuffleOutfits}>Shuffle</button>
+      <button onClick={addToFavorites}>Add to Favorites</button>
     </div>
   );
 }
