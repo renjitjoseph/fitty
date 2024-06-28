@@ -1,45 +1,38 @@
 .favorites-container {
-  text-align: center;
   padding: 20px;
-  background: linear-gradient(to right, #4facfe, #00f2fe);
-  height: 100vh;
-}
-
-button {
-  background-color: #4caf50;
-  border: none;
-  color: white;
-  padding: 15px 32px;
   text-align: center;
-  text-decoration: none;
-  display: inline-block;
-  font-size: 16px;
-  margin: 4px 2px;
-  cursor: pointer;
-  border-radius: 12px;
-}
-
-button:hover {
-  background-color: #45a049;
 }
 
 .favorites-grid {
   display: flex;
   flex-wrap: wrap;
+  gap: 20px;
   justify-content: center;
 }
 
 .favorite-outfit {
-  margin: 20px;
+  border: 1px solid #ccc;
+  border-radius: 8px;
+  padding: 10px;
+  box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1);
   text-align: center;
-  background-color: #fff;
-  border-radius: 10px;
-  padding: 20px;
-  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
 }
 
 .favorite-outfit img {
   max-width: 100px;
+  max-height: 100px;
   margin-bottom: 10px;
-  border-radius: 10px;
+}
+
+.favorite-outfit button {
+  background-color: #f44336;
+  color: white;
+  border: none;
+  padding: 5px 10px;
+  border-radius: 4px;
+  cursor: pointer;
+}
+
+.favorite-outfit button:hover {
+  background-color: #d32f2f;
 }

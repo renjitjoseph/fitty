@@ -1,93 +1,79 @@
 import React, { useState, useEffect } from "react";
+import { ref, getDownloadURL, uploadBytes } from "firebase/storage";
 import { auth, storage } from "../firebaseConfig";
-import { ref, getDownloadURL } from "firebase/storage";
 import { useNavigate } from "react-router-dom";
+import "./Favorites.css";
 
 function Favorites() {
-  const [favoriteOutfits, setFavoriteOutfits] = useState([]);
+  const [favorites, setFavorites] = useState([]);
   const navigate = useNavigate();
 
   useEffect(() => {
-    const fetchFavorites = async () => {
-      const user = auth.currentUser;
+    const authSubscription = auth.onAuthStateChanged((user) => {
       if (!user) {
         navigate("/login"); // Redirect to login if not authenticated
-        return;
+      } else {
+        fetchFavorites(user.uid);
       }
+    });
 
-      try {
-        const favoritesRef = ref(
-          storage,
-          `wardrobe/${user.uid}/favorites/favorites.json`
-        );
-        const url = await getDownloadURL(favoritesRef);
-        const response = await fetch(url, {
-          headers: { "Content-Type": "application/json" },
-        });
-        const data = await response.json();
-        setFavoriteOutfits(data);
-      } catch (error) {
-        console.error("Error fetching favorites:", error);
-      }
-    };
-
-    fetchFavorites();
+    return () => authSubscription(); // Cleanup subscription on unmount
   }, [navigate]);
 
+  const fetchFavorites = async (userId) => {
+    try {
+      const favoritesRef = ref(
+        storage,
+        `wardrobe/${userId}/favorites/favorites.json`
+      );
+      const url = await getDownloadURL(favoritesRef);
+      const response = await fetch(url);
+      const favoritesData = await response.json();
+      setFavorites(favoritesData);
+    } catch (error) {
+      console.error("Error fetching favorites:", error);
+      alert("Failed to fetch favorites.");
+    }
+  };
+
+  const deleteFavorite = async (index) => {
+    const user = auth.currentUser;
+    if (!user) return;
+
+    try {
+      const updatedFavorites = [...favorites];
+      updatedFavorites.splice(index, 1);
+
+      const blob = new Blob([JSON.stringify(updatedFavorites)], {
+        type: "application/json",
+      });
+      const favoritesRef = ref(
+        storage,
+        `wardrobe/${user.uid}/favorites/favorites.json`
+      );
+      await uploadBytes(favoritesRef, blob);
+
+      setFavorites(updatedFavorites);
+      alert("Favorite deleted successfully!");
+    } catch (error) {
+      console.error("Error deleting favorite:", error);
+      alert("Failed to delete favorite.");
+    }
+  };
+
   return (
-    <div>
-      <h1>My Favorite Outfits</h1>
+    <div className="favorites-container">
       <button onClick={() => navigate("/home")}>Back to Home</button>
-      <div>
-        {favoriteOutfits.map((outfit, index) => (
-          <div
-            key={index}
-            style={{
-              margin: "10px",
-              padding: "10px",
-              border: "1px solid #ccc",
-            }}
-          >
-            <p>
-              Top:{" "}
-              {outfit.top && (
-                <img
-                  src={outfit.top}
-                  alt="Top"
-                  style={{ width: "100px", height: "100px" }}
-                />
-              )}
-            </p>
-            <p>
-              Bottom:{" "}
-              {outfit.bottom && (
-                <img
-                  src={outfit.bottom}
-                  alt="Bottom"
-                  style={{ width: "100px", height: "100px" }}
-                />
-              )}
-            </p>
-            <p>
-              Shoes:{" "}
-              {outfit.shoes && (
-                <img
-                  src={outfit.shoes}
-                  alt="Shoes"
-                  style={{ width: "100px", height: "100px" }}
-                />
-              )}
-            </p>
-            <p>
-              Accessories:{" "}
-              {outfit.accessories && (
-                <img
-                  src={outfit.accessories}
-                  alt="Accessories"
-                  style={{ width: "100px", height: "100px" }}
-                />
-              )}
-            </p>
+      <div className="favorites-grid">
+        {favorites.map((favorite, index) => (
+          <div key={index} className="favorite-outfit">
+            {favorite.top && <img src={favorite.top} alt="top" />}
+            {favorite.bottom && <img src={favorite.bottom} alt="bottom" />}
+            {favorite.shoes && <img src={favorite.shoes} alt="shoes" />}
+            {favorite.accessories && (
+              <img src={favorite.accessories} alt="accessories" />
+            )}
+            <button onClick={() => deleteFavorite(index)}>Delete</button>
           </div>
         ))}
       </div>
