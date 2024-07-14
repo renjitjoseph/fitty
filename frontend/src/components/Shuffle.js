@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from "react";
-import { ref, listAll, getDownloadURL, uploadBytes } from "firebase/storage";
+import { ref, getDownloadURL, uploadBytes, listAll } from "firebase/storage";
 import { auth, storage } from "../firebaseConfig";
 import { useNavigate } from "react-router-dom";
 import "./Shuffle.css";
@@ -12,18 +12,17 @@ function Shuffle() {
   const navigate = useNavigate();
 
   useEffect(() => {
-    const authSubscription = auth.onAuthStateChanged((user) => {
+    const unsubscribe = auth.onAuthStateChanged((user) => {
       if (!user) {
-        navigate("/login"); // Redirect to login if not authenticated
+        navigate("/login");
       }
     });
-
-    return () => authSubscription(); // Cleanup subscription on unmount
+    return unsubscribe; // Cleanup the subscription
   }, [navigate]);
 
   const fetchCategoryItems = async (category) => {
     const user = auth.currentUser;
-    if (!user) return null; // Ensure the user is logged in
+    if (!user) return null;
 
     const itemsRef = ref(storage, `wardrobe/${user.uid}/${category}`);
     const snapshot = await listAll(itemsRef);
@@ -42,11 +41,11 @@ function Shuffle() {
     if (!user) return;
 
     const newItems = {};
-    for (let category of categories) {
+    for (const category of categories) {
       if (!locks[category]) {
         newItems[category] = await fetchCategoryItems(category);
       } else {
-        newItems[category] = outfitItems[category]; // Keep the locked item
+        newItems[category] = outfitItems[category]; // Preserve locked items
       }
     }
     setOutfitItems(newItems);
@@ -59,40 +58,34 @@ function Shuffle() {
       return;
     }
 
+    const favoritesRef = ref(
+      storage,
+      `wardrobe/${user.uid}/favorites/favorites.json`
+    );
     try {
-      const favoritesRef = ref(
-        storage,
-        `wardrobe/${user.uid}/favorites/favorites.json`
-      );
-      const favoritesSnapshot = await getDownloadURL(favoritesRef)
-        .then((url) => fetch(url).then((res) => res.json()))
-        .catch(() => []);
-      const newFavorites = [
-        ...favoritesSnapshot,
-        {
-          top: outfitItems.top?.url,
-          bottom: outfitItems.bottom?.url,
-          shoes: outfitItems.shoes?.url,
-          accessories: outfitItems.accessories?.url,
-          timestamp: new Date(),
-        },
-      ];
-      const blob = new Blob([JSON.stringify(newFavorites)], {
+      const url = await getDownloadURL(favoritesRef);
+      const response = await fetch(url);
+      const favoritesData = await response.json();
+      const updatedFavorites = [...favoritesData, outfitItems];
+      const blob = new Blob([JSON.stringify(updatedFavorites)], {
         type: "application/json",
       });
       await uploadBytes(favoritesRef, blob);
       alert("Outfit added to favorites!");
     } catch (error) {
-      console.error("Error adding to favorites:", error);
-      alert("Failed to add outfit to favorites.");
+      if (error.code === "storage/object-not-found") {
+        // If the file does not exist, create it with the outfit
+        const initialFavorites = [outfitItems];
+        const blob = new Blob([JSON.stringify(initialFavorites)], {
+          type: "application/json",
+        });
+        await uploadBytes(favoritesRef, blob);
+        alert("First outfit added to favorites!");
+      } else {
+        console.error("Error adding to favorites:", error);
+        alert("Failed to add outfit to favorites.");
+      }
     }
-  };
-
-  const toggleLock = (category) => {
-    setLocks((prevLocks) => ({
-      ...prevLocks,
-      [category]: !prevLocks[category],
-    }));
   };
 
   return (
@@ -107,13 +100,17 @@ function Shuffle() {
               <img
                 src={outfitItems[category].url}
                 alt={category}
-                style={{ width: "100px", height: "100px" }}
+                style={{ width: "100px" }}
               />
             ) : (
               "None"
             )}
           </p>
-          <button onClick={() => toggleLock(category)}>
+          <button
+            onClick={() =>
+              setLocks((prev) => ({ ...prev, [category]: !prev[category] }))
+            }
+          >
             {locks[category] ? "Unlock" : "Lock"}
           </button>
         </div>
