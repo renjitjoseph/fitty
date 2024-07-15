@@ -12,7 +12,7 @@ import Wardrobe from "./components/Wardrobe";
 import Shuffle from "./components/Shuffle";
 import Favorites from "./components/Favorites";
 import LandingPage from "./components/LandingPage";
-import { auth } from "./firebaseConfig";
+import { auth } from "./firebase/firebaseConfig";
 
 function App() {
   const [user, setUser] = useState(null);

@@ -7,7 +7,7 @@ import {
   deleteObject,
 } from "firebase/storage";
 import { v4 as uuidv4 } from "uuid";
-import { storage, db, auth } from "../firebaseConfig";
+import { storage, db, auth } from "../firebase/firebaseConfig";
 import { collection, addDoc, deleteDoc, doc } from "firebase/firestore";
 import LoadingBar from "react-top-loading-bar";
 import { useNavigate } from "react-router-dom";

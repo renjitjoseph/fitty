@@ -1,6 +1,6 @@
 import React from "react";
 import { Link, useNavigate } from "react-router-dom";
-import { auth } from "../firebaseConfig";
+import { auth } from "../firebase/firebaseConfig";
 import "./Home.css";
 
 function Home() {

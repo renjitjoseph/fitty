@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from "react";
-import { ref, getDownloadURL, uploadBytes, listAll } from "firebase/storage";
-import { auth, storage } from "../firebaseConfig";
+import { ref, getDownloadURL, listAll } from "firebase/storage";
+import { auth, storage, db } from "../firebase/firebaseConfig";
+import { collection, addDoc } from "firebase/firestore";
 import { useNavigate } from "react-router-dom";
 import "./Shuffle.css";
 
@@ -51,40 +52,16 @@ function Shuffle() {
     setOutfitItems(newItems);
   };
 
-  const addToFavorites = async () => {
-    const user = auth.currentUser;
-    if (!user) {
-      alert("You must be logged in to add favorites.");
-      return;
-    }
-
-    const favoritesRef = ref(
-      storage,
-      `wardrobe/${user.uid}/favorites/favorites.json`
-    );
+  const saveToFavorites = async () => {
     try {
-      const url = await getDownloadURL(favoritesRef);
-      const response = await fetch(url);
-      const favoritesData = await response.json();
-      const updatedFavorites = [...favoritesData, outfitItems];
-      const blob = new Blob([JSON.stringify(updatedFavorites)], {
-        type: "application/json",
-      });
-      await uploadBytes(favoritesRef, blob);
-      alert("Outfit added to favorites!");
+      const docRef = await addDoc(
+        collection(db, "users", auth.currentUser.uid, "favorites"),
+        outfitItems
+      );
+      alert("Outfit saved to favorites with ID: " + docRef.id);
     } catch (error) {
-      if (error.code === "storage/object-not-found") {
-        // If the file does not exist, create it with the outfit
-        const initialFavorites = [outfitItems];
-        const blob = new Blob([JSON.stringify(initialFavorites)], {
-          type: "application/json",
-        });
-        await uploadBytes(favoritesRef, blob);
-        alert("First outfit added to favorites!");
-      } else {
-        console.error("Error adding to favorites:", error);
-        alert("Failed to add outfit to favorites.");
-      }
+      console.error("Error saving to favorites:", error);
+      alert("Failed to save to favorites. Please try again.");
     }
   };
 
@@ -116,7 +93,7 @@ function Shuffle() {
         </div>
       ))}
       <button onClick={shuffleOutfits}>Shuffle</button>
-      <button onClick={addToFavorites}>Add to Favorites</button>
+      <button onClick={saveToFavorites}>Save to Favorites</button>
     </div>
   );
 }

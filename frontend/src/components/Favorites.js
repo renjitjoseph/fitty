@@ -1,32 +1,31 @@
-import React, { useState, useEffect } from "react";
-import { ref, getDownloadURL } from "firebase/storage";
-import { auth, storage } from "../firebaseConfig";
+import React, { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
-import "./Favorites.css";
+import { db, auth } from "../firebase/firebaseConfig";
+import { collection, getDocs } from "firebase/firestore";
+import "./Favorites.css"; // Make sure this CSS file exists and is correctly loaded
 
-function Favorites() {
+const Favorites = () => {
   const [favorites, setFavorites] = useState([]);
   const navigate = useNavigate();
 
   useEffect(() => {
     const fetchFavorites = async () => {
-      const user = auth.currentUser;
-      if (!user) {
+      if (auth.currentUser) {
+        const favsRef = collection(
+          db,
+          "users",
+          auth.currentUser.uid,
+          "favorites"
+        );
+        const snapshot = await getDocs(favsRef);
+        const favs = snapshot.docs.map((doc) => ({
+          id: doc.id,
+          ...doc.data(),
+        }));
+        setFavorites(favs);
+      } else {
+        console.log("User not logged in");
         navigate("/login");
-        return;
-      }
-      const favoritesRef = ref(
-        storage,
-        `wardrobe/${user.uid}/favorites/favorites.json`
-      );
-      try {
-        const url = await getDownloadURL(favoritesRef);
-        const response = await fetch(url);
-        const favoritesData = await response.json();
-        setFavorites(favoritesData);
-      } catch (error) {
-        console.error("Failed to fetch favorites:", error);
-        alert("Failed to load favorites.");
       }
     };
 
@@ -35,21 +34,19 @@ function Favorites() {
 
   return (
     <div className="favorites-container">
-      <button onClick={() => navigate("/home")}>Back to Home</button>
-      <div className="favorites-grid">
-        {favorites.map((favorite, index) => (
-          <div key={index} className="favorite-outfit">
-            {favorite.top && <img src={favorite.top} alt="top" />}
-            {favorite.bottom && <img src={favorite.bottom} alt="bottom" />}
-            {favorite.shoes && <img src={favorite.shoes} alt="shoes" />}
-            {favorite.accessories && (
-              <img src={favorite.accessories} alt="accessories" />
-            )}
-          </div>
-        ))}
-      </div>
+      <button className="back-button" onClick={() => navigate("/home")}>
+        Back to Home
+      </button>
+      {favorites.map((fav, index) => (
+        <div key={index} className="favorite-item">
+          <img src={fav.top.url} alt="Top" />
+          <img src={fav.bottom.url} alt="Bottom" />
+          <img src={fav.shoes.url} alt="Shoes" />
+          <img src={fav.accessories.url} alt="Accessories" />
+        </div>
+      ))}
     </div>
   );
-}
+};
 
 export default Favorites;
