@@ -1,8 +1,9 @@
 .shuffle-container {
   text-align: center;
   padding: 20px;
-  background: linear-gradient(to right, #00c6ff, #0072ff);
-  height: 100vh;
+  background: rgba(255, 255, 255, 0.8);
+  border-radius: 10px;
+  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
 }
 
 button {
@@ -17,19 +18,77 @@ button {
   margin: 4px 2px;
   cursor: pointer;
   border-radius: 12px;
-  transition: background-color 0.3s;
+  transition: background-color 0.3s, transform 0.3s;
+  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
 }
 
 button:hover {
   background-color: #45a049;
+  transform: scale(1.05);
 }
 
 .shuffle-item {
   margin: 20px 0;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  animation: fadeIn 1s ease-in-out;
 }
 
 .shuffle-item img {
   max-width: 100px;
   margin-bottom: 10px;
   border-radius: 10px;
+  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
+  transition: transform 0.3s;
+  animation: popIn 0.5s ease-in-out;
+}
+
+.shuffle-item img:hover {
+  transform: scale(1.1);
+}
+
+.lock-button {
+  background-color: #007bff;
+}
+
+.lock-button:hover {
+  background-color: #0056b3;
+}
+
+.shuffle-title {
+  font-size: 2em;
+  margin-bottom: 20px;
+  animation: fadeInDown 1s ease-in-out;
+}
+
+@keyframes fadeIn {
+  from {
+    opacity: 0;
+  }
+  to {
+    opacity: 1;
+  }
+}
+
+@keyframes fadeInDown {
+  from {
+    opacity: 0;
+    transform: translateY(-20px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+@keyframes popIn {
+  0% {
+    opacity: 0;
+    transform: scale(0.8);
+  }
+  100% {
+    opacity: 1;
+    transform: scale(1);
+  }
 }
