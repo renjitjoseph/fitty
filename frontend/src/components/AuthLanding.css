@@ -1,3 +1,4 @@
+/* General Reset */
 body,
 h1,
 h2,
@@ -19,7 +20,7 @@ body {
   height: 100vh;
 }
 
-.home {
+.container {
   background: rgba(255, 255, 255, 0.9);
   border-radius: 10px;
   box-shadow: 0 4px 20px rgba(0, 0, 0, 0.1);
@@ -29,7 +30,14 @@ body {
   position: relative;
 }
 
-.home h1 {
+.hero-image {
+  width: 100%;
+  height: auto;
+  border-radius: 10px 10px 0 0;
+  margin-bottom: 20px;
+}
+
+.container h1 {
   font-size: 2.5em;
   margin-bottom: 20px;
   color: #333;
@@ -37,14 +45,19 @@ body {
   letter-spacing: 1px;
 }
 
-.home nav {
-  display: flex;
-  flex-direction: column;
-  gap: 20px;
-  margin-top: 20px;
+.container p {
+  font-size: 1.1em;
+  margin-bottom: 30px;
+  color: #555;
 }
 
-.home nav a {
+.container nav {
+  display: flex;
+  justify-content: center;
+  gap: 20px;
+}
+
+.container nav a {
   padding: 12px 30px;
   background-color: #007bff;
   color: white;
@@ -52,28 +65,47 @@ body {
   transition: background-color 0.3s, transform 0.3s;
   font-size: 1em;
   box-shadow: 0 4px 10px rgba(0, 0, 0, 0.1);
+  border: none;
+  cursor: pointer;
   text-align: center;
 }
 
-.home nav a:hover {
+.container nav a:hover {
   background-color: #0056b3;
   transform: translateY(-3px);
 }
 
-.logout-button {
-  position: absolute;
-  top: 20px;
-  left: 20px;
-  background-color: #f11946;
-  color: white;
-  border: none;
-  padding: 10px 20px;
-  border-radius: 50px;
-  cursor: pointer;
-  transition: background-color 0.3s, transform 0.3s;
+.footer {
+  margin-top: 30px;
+  font-size: 0.9em;
+  color: #888;
 }
 
-.logout-button:hover {
-  background-color: #c1123b;
-  transform: translateY(-3px);
+.input-field {
+  width: 100%;
+  padding: 10px 15px;
+  margin-bottom: 20px;
+  border: 1px solid #ccc;
+  border-radius: 5px;
+  box-sizing: border-box;
+  font-size: 16px;
+}
+
+.error-message {
+  color: red;
+  margin-bottom: 20px;
+}
+
+.auth-button[disabled] {
+  background-color: #007bff;
+  opacity: 0.6;
+  cursor: not-allowed;
+}
+
+.back-button {
+  background-color: #6c757d;
+}
+
+.back-button:hover {
+  background-color: #5a6268;
 }

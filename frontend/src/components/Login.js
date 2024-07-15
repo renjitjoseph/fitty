@@ -2,20 +2,26 @@ import React, { useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { signInWithEmailAndPassword } from "firebase/auth";
 import { auth } from "../firebase/firebaseConfig";
-import "./Login.css";
+import "./AuthLanding.css";
 
 function Login() {
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
+  const [error, setError] = useState("");
+  const [loading, setLoading] = useState(false);
   const navigate = useNavigate();
 
   const handleLogin = async (event) => {
     event.preventDefault();
+    setLoading(true);
+    setError("");
     try {
       await signInWithEmailAndPassword(auth, email, password);
       navigate("/home"); // Redirect to the Home page on successful login
     } catch (error) {
-      console.error("Login Error:", error.message);
+      setError(error.message);
+    } finally {
+      setLoading(false);
     }
   };
 
@@ -24,9 +30,9 @@ function Login() {
   };
 
   return (
-    <div className="login-container">
+    <div className="auth-container">
       <h2>Login</h2>
-      <form className="login-form" onSubmit={handleLogin}>
+      <form className="auth-form" onSubmit={handleLogin}>
         <input
           type="email"
           className="input-field"
@@ -43,8 +49,9 @@ function Login() {
           placeholder="Password"
           required
         />
-        <button type="submit" className="login-button">
-          Login
+        {error && <p className="error-message">{error}</p>}
+        <button type="submit" className="auth-button" disabled={loading}>
+          {loading ? "Logging in..." : "Login"}
         </button>
         <button type="button" className="back-button" onClick={handleBack}>
           Back

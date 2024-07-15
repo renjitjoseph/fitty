@@ -2,20 +2,26 @@ import React, { useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { createUserWithEmailAndPassword } from "firebase/auth";
 import { auth } from "../firebase/firebaseConfig";
-import "./Register.css";
+import "./AuthLanding.css";
 
 function Register() {
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
+  const [error, setError] = useState("");
+  const [loading, setLoading] = useState(false);
   const navigate = useNavigate();
 
   const handleRegister = async (event) => {
     event.preventDefault();
+    setLoading(true);
+    setError("");
     try {
       await createUserWithEmailAndPassword(auth, email, password);
       navigate("/login"); // Redirect to login after registration
     } catch (error) {
-      console.error("Registration Error:", error.message);
+      setError(error.message);
+    } finally {
+      setLoading(false);
     }
   };
 
@@ -24,9 +30,9 @@ function Register() {
   };
 
   return (
-    <div className="register-container">
+    <div className="auth-container">
       <h2>Register</h2>
-      <form className="register-form" onSubmit={handleRegister}>
+      <form className="auth-form" onSubmit={handleRegister}>
         <input
           type="email"
           className="input-field"
@@ -43,8 +49,9 @@ function Register() {
           placeholder="Password"
           required
         />
-        <button type="submit" className="register-button">
-          Register
+        {error && <p className="error-message">{error}</p>}
+        <button type="submit" className="auth-button" disabled={loading}>
+          {loading ? "Registering..." : "Register"}
         </button>
         <button type="button" className="back-button" onClick={handleBack}>
           Back
