@@ -1,10 +1,11 @@
 import React, { useState, useEffect } from "react";
 import { ref, getDownloadURL, listAll } from "firebase/storage";
 import { auth, storage, db } from "../firebase/firebaseConfig";
-import { collection, addDoc } from "firebase/firestore";
+import { collection, addDoc, Timestamp, getDocs } from "firebase/firestore";
 import { useNavigate } from "react-router-dom";
 import Modal from "./Modal";
 import "./Shuffle.css";
+import { FaHeart } from "react-icons/fa";
 
 const categories = ["top", "bottom", "shoes", "accessories"];
 
@@ -13,6 +14,9 @@ function Shuffle() {
   const [locks, setLocks] = useState({});
   const [showModal, setShowModal] = useState(false);
   const [modalMessage, setModalMessage] = useState("");
+  const [showNameModal, setShowNameModal] = useState(false);
+  const [favoriteName, setFavoriteName] = useState("");
+  const [favoriteCount, setFavoriteCount] = useState(0);
   const navigate = useNavigate();
 
   useEffect(() => {
@@ -21,8 +25,26 @@ function Shuffle() {
         navigate("/login");
       }
     });
-    return unsubscribe; // Cleanup the subscription
+    return unsubscribe;
   }, [navigate]);
+
+  useEffect(() => {
+    const fetchFavoriteCount = async () => {
+      const user = auth.currentUser;
+      if (user) {
+        const favoritesCollection = collection(
+          db,
+          "users",
+          user.uid,
+          "favorites"
+        );
+        const favoriteSnapshot = await getDocs(favoritesCollection);
+        setFavoriteCount(favoriteSnapshot.size);
+      }
+    };
+
+    fetchFavoriteCount();
+  }, []);
 
   const fetchCategoryItems = async (category) => {
     const user = auth.currentUser;
@@ -49,25 +71,41 @@ function Shuffle() {
       if (!locks[category]) {
         newItems[category] = await fetchCategoryItems(category);
       } else {
-        newItems[category] = outfitItems[category]; // Preserve locked items
+        newItems[category] = outfitItems[category];
       }
     }
     setOutfitItems(newItems);
   };
 
   const saveToFavorites = async () => {
+    const user = auth.currentUser;
+    if (!user) return;
+
     try {
+      const name = favoriteName || `Fit ${favoriteCount + 1}`;
+
       const docRef = await addDoc(
-        collection(db, "users", auth.currentUser.uid, "favorites"),
-        outfitItems
+        collection(db, "users", user.uid, "favorites"),
+        {
+          ...outfitItems,
+          name,
+          dateSaved: Timestamp.now(),
+        }
       );
-      setModalMessage("Outfit saved to favorites with ID: " + docRef.id);
+      setModalMessage(`Outfit saved as "${name}" with ID: ${docRef.id}`);
       setShowModal(true);
+      setFavoriteName(""); // Clear the input after saving
+      setShowNameModal(false); // Close the name input modal
+      setFavoriteCount(favoriteCount + 1); // Increment the favorite count
     } catch (error) {
       console.error("Error saving to favorites:", error);
       setModalMessage("Failed to save to favorites. Please try again.");
       setShowModal(true);
     }
+  };
+
+  const handleSaveClick = () => {
+    setShowNameModal(true);
   };
 
   return (
@@ -80,7 +118,7 @@ function Shuffle() {
             {category.toUpperCase()}:{" "}
             {outfitItems[category] ? (
               <img
-                src={outfitItems[category].url}
+                src={outfitItems[category]?.url}
                 alt={category}
                 className="shuffle-img"
               />
@@ -98,8 +136,30 @@ function Shuffle() {
           </button>
         </div>
       ))}
-      <button onClick={shuffleOutfits}>Shuffle</button>
-      <button onClick={saveToFavorites}>Save to Favorites</button>
+      <div className="button-container">
+        <button className="shuffle-button" onClick={shuffleOutfits}>
+          Shuffle
+        </button>
+        <button
+          className="heart-button"
+          onClick={handleSaveClick}
+          title="Save to Favorites"
+        >
+          <FaHeart />
+        </button>
+      </div>
+
+      <Modal show={showNameModal} onClose={() => setShowNameModal(false)}>
+        <h2>Enter Favorite Name</h2>
+        <input
+          type="text"
+          value={favoriteName}
+          onChange={(e) => setFavoriteName(e.target.value)}
+          placeholder="Favorite name"
+          className="favorite-name-input"
+        />
+        <button onClick={saveToFavorites}>Save</button>
+      </Modal>
 
       <Modal show={showModal} onClose={() => setShowModal(false)}>
         {modalMessage}

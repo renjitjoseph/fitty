@@ -1,9 +1,11 @@
 .shuffle-container {
   text-align: center;
   padding: 20px;
-  background: rgba(255, 255, 255, 0.8);
-  border-radius: 10px;
-  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
+  height: 100vh;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
 }
 
 button {
@@ -60,6 +62,37 @@ button:hover {
   font-size: 2em;
   margin-bottom: 20px;
   animation: fadeInDown 1s ease-in-out;
+}
+
+.heart-button {
+  max-width: 100px;
+  background: none;
+  border: none;
+  color: #f44336;
+  background-color: #4caf50;
+  font-size: 2em;
+  cursor: pointer;
+  transition: transform 0.3s;
+}
+
+.heart-button:hover {
+  transform: scale(1.1);
+}
+
+.favorite-name-input {
+  padding: 10px;
+  border-radius: 5px;
+  border: none;
+  margin: 10px 0;
+  font-size: 16px;
+}
+
+.button-container {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  gap: 10px; /* Adjust the gap between buttons as needed */
+  margin-top: 20px;
 }
 
 @keyframes fadeIn {
